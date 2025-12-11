@@ -1,6 +1,4 @@
 import 'package:speech_to_text/speech_to_text.dart';
-import 'package:logging/logging.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class SttConfigModel {
   final SpeechListenOptions options;
@@ -29,7 +27,7 @@ class SttConfigModel {
         autoPunctuation: true,
         enableHapticFeedback: true,
       ),
-      'id_ID',
+      "",
       3,
       true,
       false,
