@@ -31,7 +31,7 @@ class SttService {
     return await _speechToText.systemLocale();
   }
 
-  Future<void> startListening({
+  Future<void> listen({
     required SttConfigModel config,
     required Function(SpeechRecognitionResult) onResult,
     required Function(double) onSoundLevel,

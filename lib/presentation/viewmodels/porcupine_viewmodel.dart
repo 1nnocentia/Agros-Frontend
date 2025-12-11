@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import '../../data/services/wake_word_service.dart';
+import '../../core/services/wake_word_service.dart';
 
 class PorcupineViewModel extends ChangeNotifier {
   String _status = "Inisialisasi...";
