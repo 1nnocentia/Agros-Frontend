@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import '../../data/models/wake_word_model.dart';
+import '../../data/services/wake_word_service.dart';
 
 class PorcupineViewModel extends ChangeNotifier {
   String _status = "Inisialisasi...";
@@ -11,17 +11,17 @@ class PorcupineViewModel extends ChangeNotifier {
   bool get isListening => _isListening;
   bool get isWakeWordDetected => _isWakeWordDetected;
 
-  late WakeWordModel _model;
+  late WakeWordService _service;
 
 
   Future<void> initService() async {
-    _model = WakeWordModel(onWakeWordDetected: _onDetected);
+    _service = WakeWordService(onWakeWordDetected: _onDetected);
 
     final accessKey = dotenv.env['PORCUPINE_ACCESS_KEY'] ?? "";
     const keywordPath = "assets/Halo-Agros_en_android.ppn";
 
     try {
-      await _model.init(accessKey, keywordPath);
+      await _service.init(accessKey, keywordPath);
       
       await startListening();
       
@@ -33,7 +33,7 @@ class PorcupineViewModel extends ChangeNotifier {
 
   Future<void> startListening() async {
     try {
-      await _model.start();
+      await _service.start();
       _isListening = true;
       _status = "Langsung Mendengarkan... Ucapkan 'Agros'";
       notifyListeners(); 
@@ -44,7 +44,7 @@ class PorcupineViewModel extends ChangeNotifier {
   }
 
   Future<void> stopListening() async {
-    await _model.stop();
+    await _service.stop();
     _isListening = false;
     _status = "Berhenti (Idle)";
     notifyListeners();
@@ -74,7 +74,7 @@ class PorcupineViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
-    _model.dispose();
+    _service.dispose();
     super.dispose();
   }
 }

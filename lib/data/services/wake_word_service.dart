@@ -1,12 +1,12 @@
 import 'package:porcupine_flutter/porcupine_manager.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-class WakeWordModel {
+class WakeWordService {
   PorcupineManager? _porcupineManager;
 
   final Function(int) onWakeWordDetected;
 
-  WakeWordModel({required this.onWakeWordDetected});
+  WakeWordService({required this.onWakeWordDetected});
 
   Future<void> init(String accessKey, String keywordPath) async {
     try {
