@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "101606336810",
+    "project_id": "agros-voiceassist",
+    "storage_bucket": "agros-voiceassist.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:101606336810:android:412ce09f6b4c3cc8be9653",
+        "android_client_info": {
+          "package_name": "com.example.agros"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_XFaE2PcvOA4mTloBS0-m_aYoJI2slIw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:101606336810:android:84bbfac174cd82eebe9653",
+        "android_client_info": {
+          "package_name": "com.example.agros_front"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_XFaE2PcvOA4mTloBS0-m_aYoJI2slIw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
