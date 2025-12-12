@@ -40,7 +40,9 @@ dependencies:
   # voice assistant
   porcupine_flutter: ^3.0.6
   speech_to_text: ^7.3.0
-
+  firebase_core: ^4.2.1
+  firebase_ai: ^3.6.0
+  
   # permissions
   permission_handler: ^12.0.1
   flutter_dotenv: ^6.0.0
