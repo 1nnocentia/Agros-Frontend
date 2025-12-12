@@ -54,7 +54,7 @@ class SpeechSamplePage extends StatelessWidget {
                   // 3. Results
                   RecognitionResultsWidget(
                     lastWords: vm.lastWords,
-                    level: vm.level,
+                    level: vm.soundLevelNotifier.value,
                   ),
 
                   // 4. Status

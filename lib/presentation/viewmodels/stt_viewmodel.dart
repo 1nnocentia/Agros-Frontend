@@ -3,31 +3,30 @@ import 'package:agros/data/models/stt_config_model.dart';
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
-import 'package:speech_to_text/speech_to_text.dart';
 
 class SttViewmodel extends ChangeNotifier {
   final SttService _service = SttService();
+
+  VoidCallback? onStartListeningAnimation;
+  VoidCallback? onStopListeningAnimation;
 
   bool _hasSpeech = false;
   bool _isListening = false;
   bool _isProcessing = false;
   String _displayText = 'Tekan mikrofon untuk berbicara';
 
-  double _level = 0.0;
+  final ValueNotifier<double> soundLevelNotifier = ValueNotifier(0.0);
   String _recognizedText = "";
   String _finalInput = "";
   String _lastStatus = "";
   String _lastError = "";
   String _lastwords = "";
 
-  List<LocaleName> _localeNammes = [];
   SttConfigModel _currentConfig = SttConfigModel.defaultConfig();
 
   bool get hasSpeech => _hasSpeech;
   bool get isListening => _isListening;
   bool get isProcessing => _isProcessing;
-  double get level => _level;
-  List<LocaleName> get localeNames => _localeNammes;
   String get displayText => _displayText;
 
   String get recognizedText => _recognizedText;
@@ -48,18 +47,14 @@ class SttViewmodel extends ChangeNotifier {
       );
 
       if(hasSpeech) {
-        _localeNammes = await _service.getLocales();
 
-        var indoLocale = _localeNammes.firstWhere(
-          (locale) => locale.localeId.startsWith('id_'),
-          orElse: () => LocaleName("", ""),
-        );
+        var systemLocale = await _service.getSystemLocale();
+        String targetId = 'id_ID';
+        if (systemLocale?.localeId == 'in_ID') {
+         targetId = 'in_ID';
+      }
 
-        var targetLocaleId = indoLocale.localeId.isNotEmpty
-          ? indoLocale.localeId
-          : (await _service.getSystemLocale())?.localeId ?? "";
-
-        _currentConfig = _currentConfig.copyWith(localeId: targetLocaleId);
+        _currentConfig = _currentConfig.copyWith(localeId: targetId);
       }
 
       _hasSpeech = hasSpeech;
@@ -76,6 +71,9 @@ class SttViewmodel extends ChangeNotifier {
       _resetState();
       _lastError = "";
       _isListening = true;
+      _displayText = '';
+
+      onStartListeningAnimation?.call();
       notifyListeners();
 
       _service.listen(
@@ -88,14 +86,21 @@ class SttViewmodel extends ChangeNotifier {
     void stopListening() {
       _logEvent('Stop Listening');
       _service.stop();
-      _level = 0.0;
       _isListening = false;
+
+      onStopListeningAnimation?.call();
+      
+      if (_finalInput.isNotEmpty) {
+        _displayText = _finalInput;
+      } else {
+        _displayText = 'Tekan mikrofon untuk berbicara';
+      }
+      
       notifyListeners();
     }
 
     void cancelListening() {
       _logEvent('Cancel Listening');
-      _level = 0.0;
       _isListening = false;
       _service.cancel();
       _resetState();
@@ -105,7 +110,6 @@ class SttViewmodel extends ChangeNotifier {
     void _resetState() {
       _recognizedText = "";
       _finalInput = "";
-      _level = 0.0;
       _lastError = "";
       _isProcessing = false;
     }
@@ -113,12 +117,20 @@ class SttViewmodel extends ChangeNotifier {
     void _resultListener(SpeechRecognitionResult result) {
       _logEvent('Result listener: ${result.finalResult}, words: ${result.recognizedWords}');
       _recognizedText = result.recognizedWords;
+      _lastwords = result.recognizedWords;
+      
+      if (result.recognizedWords.isNotEmpty) {
+        _displayText = result.recognizedWords;
+      } else if (_isListening && _displayText.isEmpty) {
+        _displayText = 'Mendengarkan...';
+      }
+      
       if (result.finalResult) {
         _finalInput = result.recognizedWords;
         _isListening = false;
         _isProcessing = true;
 
-        debugPrint("✅ INPUT FINAL DITERIMA: $_finalInput");
+        _logEvent("✅ INPUT FINAL DITERIMA: $_finalInput");
 
         // TODO: untuk fungsi firebase ai logic untuk proses input
 
@@ -126,16 +138,23 @@ class SttViewmodel extends ChangeNotifier {
           _isProcessing = false;
           notifyListeners();
         });
-    }
+      }
+      
       notifyListeners();
     }
 
     void toggleListening() {
-      _isListening = !_isListening;
-      _displayText = _isListening 
-          ? 'Sedang mendengarkan...' 
-          : 'Tekan mikrofon untuk berbicara';
-      notifyListeners();
+      if (!_hasSpeech) {
+        _displayText = 'Speech recognition tidak tersedia';
+        notifyListeners();
+        return;
+      }
+
+      if (_isListening) {
+        stopListening();
+      } else {
+        startListening();
+      }
     }
 
     void _statusListener(String status) {
@@ -158,7 +177,12 @@ class SttViewmodel extends ChangeNotifier {
       _lastError = '${error.errorMsg}';
       
       if (error.errorMsg == 'error_no_match') {
-          _recognizedText = "Maaf, saya tidak mendengar apapun.";
+        _recognizedText = "Maaf, saya tidak mendengar apapun.";
+        _displayText = "Tidak ada suara terdeteksi";
+      } else if (error.errorMsg == 'error_network') {
+        _displayText = "Koneksi bermasalah";
+      } else {
+        _displayText = "Error: ${error.errorMsg}";
       }
       
       _isListening = false;
@@ -173,7 +197,12 @@ class SttViewmodel extends ChangeNotifier {
     }
 
     void _soundLevelListener(double level) {
-      _level = level;
-      notifyListeners();
+      soundLevelNotifier.value = level;
+    }
+
+    @override
+    void dispose() {
+      soundLevelNotifier.dispose();
+      super.dispose();
     }
 }

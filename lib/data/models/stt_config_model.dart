@@ -18,6 +18,9 @@ class SttConfigModel {
   );
   
   factory SttConfigModel.defaultConfig() {
+
+    // const bool isProduction = bool.fromEnvironment('dart.vm.product');
+      
     return SttConfigModel(
       SpeechListenOptions(
         listenMode: ListenMode.dictation,
@@ -29,7 +32,7 @@ class SttConfigModel {
       ),
       "",
       3,
-      true,
+      false,
       false,
       60,
     );

@@ -17,8 +17,8 @@ class SttService {
     required Function(String) onStatus,
     bool debugLogging = false,
   }) async {
-    _log('🔧 [STT_SERVICE] Initializing speech recognition...');
-    _log('🔧 [STT_SERVICE] Debug logging: $debugLogging');
+    _log('[STT_SERVICE] Initializing speech recognition...');
+    _log('[STT_SERVICE] Debug logging: $debugLogging');
     
     try {
       final result = await _speechToText.initialize(
@@ -28,32 +28,32 @@ class SttService {
       );
       
       if (result) {
-        _log('✅ [STT_SERVICE] Speech recognition initialized successfully');
-        _log('📊 [STT_SERVICE] isAvailable: ${_speechToText.isAvailable}');
+        _log('[STT_SERVICE] Speech recognition initialized successfully');
+        _log('[STT_SERVICE] isAvailable: ${_speechToText.isAvailable}');
       } else {
-        _log('❌ [STT_SERVICE] Speech recognition initialization failed');
+        _log('[STT_SERVICE] Speech recognition initialization failed');
       }
       
       return result;
     } catch (e, stackTrace) {
-      _log('💥 [STT_SERVICE] Exception during initialization: $e');
-      _log('📜 [STT_SERVICE] Stack trace: $stackTrace');
+      _log('[STT_SERVICE] Exception during initialization: $e');
+      _log('[STT_SERVICE] Stack trace: $stackTrace');
       rethrow;
     }
   }
 
   Future<List<LocaleName>> getLocales() async {
-    _log('🌍 [STT_SERVICE] Fetching available locales...');
+    _log('[STT_SERVICE] Fetching available locales...');
     try {
       final locales = await _speechToText.locales();
-      _log('✅ [STT_SERVICE] Found ${locales.length} locales');
+      _log('[STT_SERVICE] Found ${locales.length} locales');
       for (var locale in locales) {
         _log('   - ${locale.localeId}: ${locale.name}');
       }
       return locales;
     } catch (e, stackTrace) {
-      _log('💥 [STT_SERVICE] Error getting locales: $e');
-      _log('📜 [STT_SERVICE] Stack trace: $stackTrace');
+      _log('[STT_SERVICE] Error getting locales: $e');
+      _log('[STT_SERVICE] Stack trace: $stackTrace');
       rethrow;
     }
   }
@@ -62,11 +62,11 @@ class SttService {
     _log('🌍 [STT_SERVICE] Fetching system locale...');
     try {
       final locale = await _speechToText.systemLocale();
-      _log('✅ [STT_SERVICE] System locale: ${locale?.localeId} (${locale?.name})');
+      _log('[STT_SERVICE] System locale: ${locale?.localeId} (${locale?.name})');
       return locale;
     } catch (e, stackTrace) {
-      _log('💥 [STT_SERVICE] Error getting system locale: $e');
-      _log('📜 [STT_SERVICE] Stack trace: $stackTrace');
+      _log('[STT_SERVICE] Error getting system locale: $e');
+      _log('[STT_SERVICE] Stack trace: $stackTrace');
       rethrow;
     }
   }
@@ -76,8 +76,8 @@ class SttService {
     required Function(SpeechRecognitionResult) onResult,
     required Function(double) onSoundLevel,
   }) async {
-    _log('🎤 [STT_SERVICE] Starting to listen...');
-    _log('📋 [STT_SERVICE] Config:');
+    _log('[STT_SERVICE] Starting to listen...');
+    _log('[STT_SERVICE] Config:');
     _log('   - Locale: ${config.localeId}');
     _log('   - Listen for: ${config.listenFor}s');
     _log('   - Pause for: ${config.pauseFor}s');
@@ -89,9 +89,8 @@ class SttService {
     try {
       await _speechToText.listen(
         onResult: (result) {
-          // Log hanya final results untuk mengurangi spam
           if (result.finalResult) {
-            _log('📝 [STT_SERVICE] Final result: "${result.recognizedWords}"');
+            _log('[STT_SERVICE] Final result: "${result.recognizedWords}"');
           }
           onResult(result);
         },
@@ -99,43 +98,38 @@ class SttService {
         pauseFor: Duration(seconds: config.pauseFor),
         localeId: config.localeId,
         onSoundLevelChange: (level) {
-          // Tidak log sound level karena terlalu sering (ratusan kali/detik)
-          // Hanya log jika level sangat tinggi
-          if (level > 5.0) {
-            _log('🔊 [STT_SERVICE] Very high sound: ${level.toStringAsFixed(1)}');
-          }
           onSoundLevel(level);
+          if (level > 5.0) {
+          }
         },
         listenOptions: config.options,
       );
-      _log('✅ [STT_SERVICE] Listen started successfully');
+      _log('[STT_SERVICE] Listen started successfully');
     } catch (e, stackTrace) {
-      _log('💥 [STT_SERVICE] Error starting listen: $e');
-      _log('📜 [STT_SERVICE] Stack trace: $stackTrace');
+      _log('[STT_SERVICE] Error starting listen: $e');
+      _log('[STT_SERVICE] Stack trace: $stackTrace');
       rethrow;
     }
   }
 
   Future<void> stop() async {
-    _log('⏹️ [STT_SERVICE] Stopping speech recognition...');
     try {
       await _speechToText.stop();
-      _log('✅ [STT_SERVICE] Speech recognition stopped');
+      _log('[STT_SERVICE] Speech recognition stopped');
     } catch (e, stackTrace) {
-      _log('💥 [STT_SERVICE] Error stopping: $e');
-      _log('📜 [STT_SERVICE] Stack trace: $stackTrace');
+      _log('[STT_SERVICE] Error stopping: $e');
+      _log('[STT_SERVICE] Stack trace: $stackTrace');
       rethrow;
     }
   }
 
   Future<void> cancel() async {
-    _log('❌ [STT_SERVICE] Cancelling speech recognition...');
     try {
       await _speechToText.cancel();
-      _log('✅ [STT_SERVICE] Speech recognition cancelled');
+      _log('[STT_SERVICE] Speech recognition cancelled');
     } catch (e, stackTrace) {
-      _log('💥 [STT_SERVICE] Error cancelling: $e');
-      _log('📜 [STT_SERVICE] Stack trace: $stackTrace');
+      _log('[STT_SERVICE] Error cancelling: $e');
+      _log('[STT_SERVICE] Stack trace: $stackTrace');
       rethrow;
     }
   }
@@ -144,10 +138,8 @@ class SttService {
     final timestamp = DateTime.now().toIso8601String();
     final logMessage = '[$timestamp] $message';
     
-    // Log ke console dengan debugPrint
     debugPrint(logMessage);
     
-    // Log ke developer console untuk lebih detail
     developer.log(
       message,
       time: DateTime.now(),

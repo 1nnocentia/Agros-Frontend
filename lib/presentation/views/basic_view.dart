@@ -46,22 +46,31 @@ class _BasicViewState extends State<BasicView>
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      appBar: AppBar(
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: IconButton(
-              icon: const Icon(Icons.swap_horiz),
-              onPressed: () {},
-              tooltip: 'Ganti Mode',
+    return ChangeNotifierProvider(
+      create: (_) => SttViewmodel()..initSpeechState(),
+      child: Scaffold(
+        appBar: AppBar(
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: IconButton(
+                icon: const Icon(Icons.swap_horiz),
+                onPressed: () {},
+                tooltip: 'Ganti Mode',
+              ),
             ),
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: Consumer<SttViewmodel>(
-          builder: (context, viewModel, child) {
+          ],
+        ),
+        body: SafeArea(
+          child: Consumer<SttViewmodel>(
+            builder: (context, viewModel, child) {
+              viewModel.onStartListeningAnimation = () {
+                _animationController.repeat(reverse: true);
+              };
+              viewModel.onStopListeningAnimation = () {
+                _animationController.stop();
+                _animationController.reset();
+              };
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -82,6 +91,20 @@ class _BasicViewState extends State<BasicView>
                     isListening: viewModel.isListening,
                   ),
                   
+                  if (viewModel.isListening)
+                    ValueListenableBuilder<double>(
+                      valueListenable: viewModel.soundLevelNotifier,
+                      builder: (context, level, child) {
+                        return Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: LinearProgressIndicator(
+                            value: level / 10.0, // Normalize to 0-1
+                            backgroundColor: Colors.grey[300],
+                          ),
+                        );
+                      },
+                    ),
+
                   const Spacer(),
                   
                   Padding(
@@ -99,7 +122,7 @@ class _BasicViewState extends State<BasicView>
           },
         ),
       ),
-    );
+    ));
   }
 }
 
