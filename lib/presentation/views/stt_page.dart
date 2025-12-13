@@ -42,7 +42,6 @@ class SpeechSamplePage extends StatelessWidget {
                     ),
                   ),
 
-                  // 2. Main Controls (Start/Stop)
                   SpeechControlWidget(
                     hasSpeech: vm.hasSpeech,
                     isListening: vm.isListening,
@@ -51,16 +50,13 @@ class SpeechSamplePage extends StatelessWidget {
                     cancelListening: vm.cancelListening,
                   ),
 
-                  // 3. Results
                   RecognitionResultsWidget(
                     lastWords: vm.lastWords,
                     level: vm.soundLevelNotifier.value,
                   ),
 
-                  // 4. Status
                   SpeechStatusWidget(lastStatus: vm.lastStatus),
 
-                  // 5. Error
                   ErrorDisplayWidget(lastError: vm.lastError),
                 ],
               ),
@@ -72,7 +68,6 @@ class SpeechSamplePage extends StatelessWidget {
   }
 }
 
-// --- SUB WIDGETS (Dipisah biar rapi) ---
 
 class SpeechControlWidget extends StatelessWidget {
   final bool hasSpeech;
@@ -212,7 +207,6 @@ class ErrorDisplayWidget extends StatelessWidget {
   }
 }
 
-// --- SETTINGS DIALOG (Dipisah Logicnya) ---
 
 Future<void> _showSetUp(BuildContext context, SttViewmodel vm) async {
   // Logic Dialog ini agak panjang, idealnya dipisah ke Widget sendiri 
