@@ -1,4 +1,3 @@
-
 import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
 import 'package:agros/data/models/stt_config_model.dart';
