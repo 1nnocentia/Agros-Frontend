@@ -42,6 +42,12 @@ class AssistantViewModel extends ChangeNotifier {
       }
     });
 
+    ttsVm.addListener(() {
+      if (ttsVm.ttsState == TtsState.stopped && _state == AgrosState.speaking) {
+        startStandbyMode();
+      }
+    });
+
     startStandbyMode();
   }
 
@@ -82,15 +88,9 @@ class AssistantViewModel extends ChangeNotifier {
     _lastResponse = responseText;
     notifyListeners();
     await ttsVm.speak(responseText);
-
-    // TODO: Nanti kita tambahkan logika untuk mendeteksi kapan TTS selesai
-    // Untuk sekarang, user harus tekan tombol manual untuk kembali standby
-    // atau kita set timer estimasi.
     
-    // Untuk testing, kita balik ke standby setelah 5 detik
-    Future.delayed(const Duration(seconds: 5), () {
-        startStandbyMode();
-    });
+    // TTS akan otomatis trigger listener saat selesai
+    // yang akan memanggil startStandbyMode()
   }
 
   void _setState(AgrosState s) {
