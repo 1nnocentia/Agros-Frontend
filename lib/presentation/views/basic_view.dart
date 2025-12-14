@@ -1,9 +1,7 @@
+import 'package:agros/presentation/viewmodels/assistant_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-import 'package:agros/presentation/viewmodels/stt_viewmodel.dart';
-import 'package:agros/presentation/viewmodels/tts_viewmodel.dart';
 
 import 'package:agros/presentation/widgets/toggle_switch.dart';
 import 'package:agros/presentation/widgets/microphone_icon.dart';
@@ -56,16 +54,27 @@ class _BasicViewState extends State<BasicView> {
 
               const Spacer(flex: 1),
 
-              Consumer2<SttViewmodel, TtsViewModel>(
-                builder: (context, sttVm, ttsVm, child) {
+              Consumer<AssistantViewModel>(
+                builder: (context, assistantVm, child) {
                   String textToShow = "Hi! Sahabat Agros!";
 
-                  if (sttVm.isListening) {
-                    textToShow = sttVm.lastWords.isEmpty ? "Mendengarkan..." : sttVm.lastWords;
-                  } else if (ttsVm.isPlaying) {
-                    textToShow = "Agros sedang menjelaskan..."; 
-                  } else if (sttVm.lastWords.isNotEmpty) {
-                    textToShow = sttVm.lastWords;
+                  switch (assistantVm.state) {
+                    case AgrosState.standby:
+                      textToShow = "Panggil 'Halo Agros'...";
+                      break;
+                    case AgrosState.listeningCommand:
+                      textToShow = "Mendengarkan...";
+                      break;
+                    case AgrosState.processing:
+                      textToShow = "Agros sedang berpikir...";
+                      break;
+                    case AgrosState.speaking:
+                      if (assistantVm.lastResponse.isNotEmpty) {
+                        textToShow = assistantVm.lastResponse;
+                      } else {
+                        textToShow = "Agros menjawab...";
+                      }
+                      break;
                   }
 
                   return Container(
@@ -85,21 +94,21 @@ class _BasicViewState extends State<BasicView> {
 
               const Spacer(flex: 1),
 
-              Consumer2<SttViewmodel, TtsViewModel>(
-                builder: (context, sttVm, ttsVm, child) {
-                  bool isBusy = sttVm.isListening; 
+              Consumer<AssistantViewModel>(
+                builder: (context, assistantVm, child) {
+                  bool isBusy = assistantVm.state != AgrosState.standby;
 
                   return MicropohoneIcon(
                     isListening: isBusy,
                     onTap: () {
-                      if (ttsVm.isPlaying) {
-                        ttsVm.stop(); 
+                      if (assistantVm.state == AgrosState.standby) {
+                        assistantVm.manualStartListening();
                       } 
-                      else if (sttVm.isListening) {
-                        sttVm.stopListening();
+                      else if (assistantVm.state == AgrosState.listeningCommand) {
+                        assistantVm.manualStopListening();
                       } 
                       else {
-                        sttVm.startListening();
+                        assistantVm.startStandbyMode();
                       }
                     },
                   );

@@ -62,19 +62,25 @@ class PorcupineViewModel extends ChangeNotifier {
     print("WAKE WORD TERDETEKSI DI VIEWMODEL!");
     
     _isWakeWordDetected = true;
-    _status = "TERDETEKSI: Agros!";
+    _status = "Hi Sahabat Agros!";
     notifyListeners();
 
-    Future.delayed(const Duration(milliseconds: 1500), () {
-      _isWakeWordDetected = false;
-      _status = "Mendengarkan lagi...";
-      notifyListeners();
-    });
+    // Future.delayed(const Duration(milliseconds: 1500), () {
+    //   _isWakeWordDetected = false;
+    //   _status = "Mendengarkan lagi...";
+    //   notifyListeners();
+    // });
+  }
+
+  void resetDetection() {
+    _isWakeWordDetected = false;
+    notifyListeners();
   }
 
   @override
   void dispose() {
     _service.dispose();
     super.dispose();
+    
   }
 }

@@ -12,7 +12,7 @@ class AiService {
       SafetySetting(HarmCategory.dangerousContent, HarmBlockThreshold.medium, null),
     ];
 
-    _model = FirebaseAI.googleAI().generativeModel(model: 'gemini-2.5-flash', safetySettings: safetySettings);
+    _model = FirebaseAI.googleAI().generativeModel(model: 'gemini-2.0-flash', safetySettings: safetySettings);
 
     _startNewChat();
   }
@@ -23,6 +23,7 @@ class AiService {
         Content('user', [TextPart('''Kamu adalah Agros, asisten suara untuk petani Indonesia.
         Tugas utamamu adalah membantu petani mengisi data pertanian secara lisan dengan bahasa Indonesia yang santai, netral, dan mudah dipahami.
         Fokus utamamu adalah pengumpulan data, bukan edukasi panjang atau diskusi bebas. Panggil user dengan "Sahabat Agros".
+        Buat percakapan dengan user seperti ngobrol santai.
         1. TUJUAN UTAMA:
           - Mengumpulkan data pertanian dari petani melalui percakapan bebas.
           - Menuntun petani jika data belum lengkap.
@@ -68,7 +69,7 @@ class AiService {
           - switch_lahan
         10. PRINSIP UTAMA: lebih baik bertanya ulang daripada salah simpan data
         ''')]),
-        Content('model', [TextPart("jbijebfjif")]),
+        Content('model', [TextPart("Siap, Sahabat Agros. Saya mengerti. Saya akan mengumpulkan data user, lahan, tanam, dan panen, serta memberikan output JSON dan feedback verbal. Mari kita mulai.")]),
       ]
     );
   }
