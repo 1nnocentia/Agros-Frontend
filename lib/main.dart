@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+// import 'package:flutter/services.dart';
 
 import 'package:provider/provider.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+// import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-import 'firebase_options.dart';
-import 'package:firebase_core/firebase_core.dart';
+// import 'firebase_options.dart';
+// import 'package:firebase_core/firebase_core.dart';
 
 import 'package:agros/core/theme/app_theme.dart';
 // import 'package:agros/presentation/views/porcupine_page.dart';
 // import 'package:agros/presentation/viewmodels/porcupine_viewmodel.dart';
 
-import 'package:agros/presentation/viewmodels/stt_viewmodel.dart';
+// import 'package:agros/presentation/viewmodels/stt_viewmodel.dart';
 
-import 'package:agros/presentation/viewmodels/chat_viewmodel.dart';
-import 'package:agros/presentation/views/chat_testing_view.dart';
+// import 'package:agros/presentation/viewmodels/chat_viewmodel.dart';
+// import 'package:agros/presentation/views/chat_testing_view.dart';
 
 // void main() async {
 //   WidgetsFlutterBinding.ensureInitialized();
