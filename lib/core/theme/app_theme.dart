@@ -76,7 +76,7 @@ class AppTheme {
           color: colorScheme.onSurface,
         ),
         labelSmall: TextStyle(
-          fontSize: 16,
+          fontSize: 12,
           fontWeight: FontWeight.w500,
           color: colorScheme.onSurface,
         ),

@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 import 'package:agros/presentation/viewmodels/stt_viewmodel.dart';
+import 'package:agros/presentation/viewmodels/tts_viewmodel.dart';
+
+import 'package:agros/presentation/widgets/toggle_switch.dart';
+import 'package:agros/presentation/widgets/microphone_icon.dart';
+
 
 class BasicView extends StatefulWidget {
   const BasicView({super.key});
@@ -9,245 +16,97 @@ class BasicView extends StatefulWidget {
   State<BasicView> createState() => _BasicViewState();
 }
 
-class _BasicViewState extends State<BasicView>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _animationController;
-  late final Animation<double> _scaleAnimation;
-  late final Animation<double> _opacityAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeAnimations();
-  }
-
-  void _initializeAnimations() {
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    )..repeat(reverse: true);
-
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.2).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
-    );
-
-    _opacityAnimation = Tween<double>(begin: 0.3, end: 0.8).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
+class _BasicViewState extends State<BasicView> {
+  bool isBasicMode = true;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
-    return ChangeNotifierProvider(
-      create: (_) => SttViewmodel()..initSpeechState(),
-      child: Scaffold(
-        appBar: AppBar(
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 16.0),
-              child: IconButton(
-                icon: const Icon(Icons.swap_horiz),
-                onPressed: () {},
-                tooltip: 'Ganti Mode',
-              ),
-            ),
-          ],
-        ),
-        body: SafeArea(
-          child: Consumer<SttViewmodel>(
-            builder: (context, viewModel, child) {
-              viewModel.onStartListeningAnimation = () {
-                _animationController.repeat(reverse: true);
-              };
-              viewModel.onStopListeningAnimation = () {
-                _animationController.stop();
-                _animationController.reset();
-              };
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+    return Scaffold(
+      backgroundColor: colorScheme.surface,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+          child: Column(
+            children: [
+              
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Spacer(),
-                  
-                  _M3MicrophoneButton(
-                    isListening: viewModel.isListening,
-                    scaleAnimation: _scaleAnimation,
-                    opacityAnimation: _opacityAnimation,
-                    onTap: viewModel.toggleListening,
-                  ),
-                  
-                  const SizedBox(height: 32),
-                  
-                  _M3TextDisplay(
-                    text: viewModel.displayText,
-                    isListening: viewModel.isListening,
-                  ),
-                  
-                  if (viewModel.isListening)
-                    ValueListenableBuilder<double>(
-                      valueListenable: viewModel.soundLevelNotifier,
-                      builder: (context, level, child) {
-                        return Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: LinearProgressIndicator(
-                            value: level / 10.0, // Normalize to 0-1
-                            backgroundColor: Colors.grey[300],
-                          ),
-                        );
-                      },
+                  Text(
+                    'AGROS',
+                    style: GoogleFonts.baloo2(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.primary, 
+                      letterSpacing: 2.0,
                     ),
-
-                  const Spacer(),
-                  
-                  Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Text(
-                      'Agros',
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                    ),
+                  ),
+                  ToggleSwitch(
+                    value: isBasicMode,
+                    onChanged: (val) {
+                      setState(() => isBasicMode = val);
+                      // TODO: Implementasi logika pindah mode di masa depan
+                    },
                   ),
                 ],
               ),
-            );
-          },
-        ),
-      ),
-    ));
-  }
-}
 
-class _M3MicrophoneButton extends StatelessWidget {
-  const _M3MicrophoneButton({
-    required this.isListening,
-    required this.scaleAnimation,
-    required this.opacityAnimation,
-    required this.onTap,
-  });
+              const Spacer(flex: 1),
 
-  final bool isListening;
-  final Animation<double> scaleAnimation;
-  final Animation<double> opacityAnimation;
-  final VoidCallback onTap;
+              Consumer2<SttViewmodel, TtsViewModel>(
+                builder: (context, sttVm, ttsVm, child) {
+                  String textToShow = "Hi! Sahabat Agros!";
 
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    
-    final activeColor = colorScheme.primary; 
-    final inactiveColor = colorScheme.surfaceContainerHigh;
+                  if (sttVm.isListening) {
+                    textToShow = sttVm.lastWords.isEmpty ? "Mendengarkan..." : sttVm.lastWords;
+                  } else if (ttsVm.isPlaying) {
+                    textToShow = "Agros sedang menjelaskan..."; 
+                  } else if (sttVm.lastWords.isNotEmpty) {
+                    textToShow = sttVm.lastWords;
+                  }
 
-    return Stack(
-      alignment: Alignment.center,
-      children: [
-        if (isListening) ...[
-          _AnimatedPulse(
-            size: 200,
-            color: activeColor,
-            baseOpacity: 0.2,
-            scaleAnimation: scaleAnimation,
-            opacityAnimation: opacityAnimation,
-          ),
-        ],
-
-        SizedBox(
-          width: 140,
-          height: 140,
-          child: IconButton.filled(
-            onPressed: onTap,
-            style: IconButton.styleFrom(
-              backgroundColor: isListening ? activeColor : inactiveColor,
-              foregroundColor: isListening ? colorScheme.onPrimary : colorScheme.primary,
-              elevation: isListening ? 6 : 0,
-            ),
-            icon: Icon(
-              isListening ? Icons.mic : Icons.mic_none,
-              size: 64,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _AnimatedPulse extends StatelessWidget {
-  const _AnimatedPulse({
-    required this.size,
-    required this.color,
-    required this.baseOpacity,
-    required this.scaleAnimation,
-    required this.opacityAnimation,
-  });
-
-  final double size;
-  final Color color;
-  final double baseOpacity;
-  final Animation<double> scaleAnimation;
-  final Animation<double> opacityAnimation;
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: scaleAnimation,
-      builder: (context, child) {
-        return Container(
-          width: size * scaleAnimation.value,
-          height: size * scaleAnimation.value,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: color.withValues(alpha: baseOpacity * opacityAnimation.value),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _M3TextDisplay extends StatelessWidget {
-  const _M3TextDisplay({
-    required this.text,
-    required this.isListening,
-  });
-
-  final String text;
-  final bool isListening;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24),
-      child: Card(
-        elevation: 2,
-        color: colorScheme.surfaceContainerLow, 
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: SizedBox(
-            width: double.infinity,
-            height: 100,
-            child: Center(
-              child: Text(
-                text,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: isListening 
-                          ? colorScheme.primary 
-                          : colorScheme.onSurfaceVariant,
-                      fontWeight: FontWeight.w500,
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: Text(
+                      textToShow,
+                      textAlign: TextAlign.center,
+                      style: textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                        color: colorScheme.onSurface,
+                        height: 1.3,
+                      ),
                     ),
+                  );
+                },
               ),
-            ),
+
+              const Spacer(flex: 1),
+
+              Consumer2<SttViewmodel, TtsViewModel>(
+                builder: (context, sttVm, ttsVm, child) {
+                  bool isBusy = sttVm.isListening; 
+
+                  return MicropohoneIcon(
+                    isListening: isBusy,
+                    onTap: () {
+                      if (ttsVm.isPlaying) {
+                        ttsVm.stop(); 
+                      } 
+                      else if (sttVm.isListening) {
+                        sttVm.stopListening();
+                      } 
+                      else {
+                        sttVm.startListening();
+                      }
+                    },
+                  );
+                },
+              ),
+              const Spacer(flex: 2),
+            ],
           ),
         ),
       ),
