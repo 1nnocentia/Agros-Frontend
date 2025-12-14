@@ -42,6 +42,7 @@ dependencies:
   speech_to_text: ^7.3.0
   firebase_core: ^4.2.1
   firebase_ai: ^3.6.0
+  flutter_tts: ^4.2.3
   
   # permissions
   permission_handler: ^12.0.1

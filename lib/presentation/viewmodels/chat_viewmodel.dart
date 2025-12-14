@@ -2,7 +2,7 @@ import 'package:agros/core/services/ai_service.dart';
 import 'package:agros/data/models/chat_message.dart';
 import 'package:flutter/material.dart';
 
-class ChatViewmodel extends ChangeNotifier {
+class ChatViewModel extends ChangeNotifier {
   final AiService _aiService = AiService();
 
   final List<ChatMessage> _messages = [];

@@ -81,6 +81,17 @@ class AppTheme {
           color: colorScheme.onSurface,
         ),
       ),
+
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.all(Colors.white),
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return Colors.grey.shade400;
+          }
+          return Colors.green;
+        }),
+        trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+      ),
       
       appBarTheme: AppBarTheme(
         centerTitle: false,
