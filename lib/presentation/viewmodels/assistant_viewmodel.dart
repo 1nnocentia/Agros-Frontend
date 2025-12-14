@@ -89,8 +89,6 @@ class AssistantViewModel extends ChangeNotifier {
     notifyListeners();
     await ttsVm.speak(responseText);
     
-    // TTS akan otomatis trigger listener saat selesai
-    // yang akan memanggil startStandbyMode()
   }
 
   void _setState(AgrosState s) {
