@@ -20,20 +20,12 @@ class MicropohoneIcon extends StatelessWidget {
 
     return Column(
       children: [
-        Text(
-          isListening ? "Mendengarkan.." : "Tekan untuk bicara",
-          style: textTheme.bodyMedium?.copyWith(
-            color: colorScheme.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(height: 20),
-        
         GestureDetector(
           onTap: onTap,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 300),
-            width: isListening ? 180 : 160,
-            height: isListening ? 180 : 160,
+            width: isListening ? 220 : 200,
+            height: isListening ? 220 : 200,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: currentColor,
@@ -44,9 +36,22 @@ class MicropohoneIcon extends StatelessWidget {
                 spreadRadius: isListening ? 8 : 2,
                 )
               ]
-            )
+            ),
+            child: Icon(
+              isListening ? Icons.stop : Icons.mic_none_outlined,
+              size: 80,
+              color: colorScheme.onPrimary,
+            ),
           )
-        )
+        ),
+        const SizedBox(height: 20),
+
+        Text(
+          isListening ? "Mendengarkan.." : "Tekan untuk bicara",
+          style: textTheme.bodyMedium?.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
+        ),
       ],
     );
   }
