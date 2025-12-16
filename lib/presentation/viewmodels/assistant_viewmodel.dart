@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 import 'porcupine_viewmodel.dart';
 import 'stt_viewmodel.dart';
 import 'tts_viewmodel.dart';
@@ -11,6 +12,8 @@ enum AgrosState {
 }
 
 class AssistantViewModel extends ChangeNotifier {
+  static final Logger _logger = Logger('AssistantViewModel');
+  
   final PorcupineViewModel wakeWordVm;
   final SttViewmodel sttVm;
   final TtsViewModel ttsVm; 
@@ -61,7 +64,7 @@ class AssistantViewModel extends ChangeNotifier {
     await ttsVm.stop();
 
     await wakeWordVm.startListening();
-    print("AGROS: Mode Standby (Menunggu dipanggil)...");
+    _logger.info('AGROS: Mode Standby (Menunggu dipanggil)...');
   }
 
   Future<void> _startListeningUser() async {
@@ -69,14 +72,14 @@ class AssistantViewModel extends ChangeNotifier {
 
     await wakeWordVm.stopListening();
     
-    print("AGROS: Mendengarkan perintah user...");
+    _logger.info('AGROS: Mendengarkan perintah user...');
     
     sttVm.startListening();
   }
 
   Future<void> _processToAI(String text) async {
     _setState(AgrosState.processing);
-    print("AGROS: Mengirim ke AI -> $text");
+    _logger.info('AGROS: Mengirim ke AI -> $text');
 
     await Future.delayed(const Duration(seconds: 10));
 

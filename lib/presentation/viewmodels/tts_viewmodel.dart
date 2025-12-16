@@ -1,5 +1,6 @@
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
+import 'package:logging/logging.dart';
 import 'package:agros/core/services/tts_service.dart';
 
 
@@ -7,6 +8,7 @@ import 'package:agros/core/services/tts_service.dart';
 enum TtsState {playing, stopped, paused, continued}
 
 class TtsViewModel extends ChangeNotifier {
+  static final Logger _logger = Logger('TtsViewModel');
   final TtsService _service = TtsService();
 
   TtsState _ttsState = TtsState.stopped;
@@ -53,7 +55,7 @@ class TtsViewModel extends ChangeNotifier {
     final systemLocale = PlatformDispatcher.instance.locale;
     final systemLanguageCode = "${systemLocale.languageCode}-${systemLocale.countryCode}";
 
-    debugPrint("System Locale User: $systemLanguageCode");
+    _logger.info('System Locale User: $systemLanguageCode');
 
     bool hasIndonesian = _languages.contains('id-ID');
     
@@ -61,15 +63,15 @@ class TtsViewModel extends ChangeNotifier {
 
     if (systemLanguageCode == 'id-ID' && hasIndonesian) {
       await setLanguage('id-ID');
-      debugPrint("Menggunakan Bahasa Indonesia (Sesuai System).");
+      _logger.info('Menggunakan Bahasa Indonesia (Sesuai System).');
     } else if (hasSystemLang) {
       await setLanguage(systemLanguageCode);
-      debugPrint("Menggunakan Bahasa System: $systemLanguageCode");
+      _logger.info('Menggunakan Bahasa System: $systemLanguageCode');
     } else if (hasIndonesian) {
       await setLanguage('id-ID');
-      debugPrint("Bahasa System tidak didukung. Fallback ke Bahasa Indonesia.");
+      _logger.info('Bahasa System tidak didukung. Fallback ke Bahasa Indonesia.');
     } else {
-      debugPrint("Tidak ada bahasa yang cocok. Menggunakan default engine.");
+      _logger.info('Tidak ada bahasa yang cocok. Menggunakan default engine.');
     }
 
     _service.instance.setStartHandler(() {
@@ -98,7 +100,7 @@ class TtsViewModel extends ChangeNotifier {
     });
 
     _service.instance.setErrorHandler((msg) {
-      debugPrint("TTS Error: $msg");
+      _logger.severe('TTS Error: $msg');
       _ttsState = TtsState.stopped;
       notifyListeners();
     });
@@ -112,7 +114,7 @@ class TtsViewModel extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      debugPrint("Error loading languages: $e");
+      _logger.severe('Error loading languages: $e');
     }
   }
 
@@ -124,7 +126,7 @@ class TtsViewModel extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      debugPrint("Error loading engines: $e");
+      _logger.severe('Error loading engines: $e');
     }
   }
 
@@ -167,7 +169,7 @@ class TtsViewModel extends ChangeNotifier {
         _isCurrentLanguageInstalled = (installed as bool);
         
         if (!_isCurrentLanguageInstalled) {
-          debugPrint("Peringatan: Bahasa $lang belum di-download di pengaturan HP Android.");
+          _logger.warning('Peringatan: Bahasa $lang belum di-download di pengaturan HP Android.');
         }
       }
     }
