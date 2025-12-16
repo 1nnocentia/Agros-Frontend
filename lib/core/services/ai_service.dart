@@ -8,11 +8,22 @@ class AiService {
     final safetySettings = [
       SafetySetting(HarmCategory.harassment, HarmBlockThreshold.medium, null),
       SafetySetting(HarmCategory.hateSpeech, HarmBlockThreshold.medium, null),
-      SafetySetting(HarmCategory.sexuallyExplicit, HarmBlockThreshold.medium, null),
-      SafetySetting(HarmCategory.dangerousContent, HarmBlockThreshold.medium, null),
+      SafetySetting(
+        HarmCategory.sexuallyExplicit,
+        HarmBlockThreshold.medium,
+        null,
+      ),
+      SafetySetting(
+        HarmCategory.dangerousContent,
+        HarmBlockThreshold.medium,
+        null,
+      ),
     ];
 
-    _model = FirebaseAI.googleAI().generativeModel(model: 'gemini-2.0-flash', safetySettings: safetySettings);
+    _model = FirebaseAI.googleAI().generativeModel(
+      model: 'gemini-2.0-flash',
+      safetySettings: safetySettings,
+    );
 
     _startNewChat();
   }
@@ -20,7 +31,8 @@ class AiService {
   void _startNewChat() {
     _chatSession = _model.startChat(
       history: [
-        Content('user', [TextPart('''Kamu adalah Agros, asisten suara untuk petani Indonesia.
+        Content('user', [
+          TextPart('''Kamu adalah Agros, asisten suara untuk petani Indonesia.
         Tugas utamamu adalah membantu petani mengisi data pertanian secara lisan dengan bahasa Indonesia yang santai, netral, dan mudah dipahami.
         Fokus utamamu adalah pengumpulan data, bukan edukasi panjang atau diskusi bebas. Panggil user dengan "Sahabat Agros".
         Buat percakapan dengan user seperti ngobrol santai.
@@ -58,19 +70,35 @@ class AiService {
         8. ERROR & AMIBU HANDLING
           - Jika input tidak jelas: "Maaf, saya kurang menangkap maksudnya. Bisa diulangi pelan-pelan?"
           - Jika pilihannya tidak valid, ambil dari data dropdown"
-        9. INTENT YANG DIKENALI
-          - create_lahan
-          - update_lahan
-          - update_user
-          - create_tanam
-          - update_tanam
-          - create_panen
-          - update_panen
-          - switch_lahan
-        10. PRINSIP UTAMA: lebih baik bertanya ulang daripada salah simpan data
-        ''')]),
-        Content('model', [TextPart("Siap, Sahabat Agros. Saya mengerti. Saya akan mengumpulkan data user, lahan, tanam, dan panen, serta memberikan output JSON dan feedback verbal. Mari kita mulai.")]),
-      ]
+        9. INTENT/ACTION YANG DIKENALI
+          DATA RETRIEVAL (get):
+          - get_lahan: ambil daftar lahan user
+          - get_tanam: ambil daftar tanaman yang sedang aktif/ongoing
+          - get_komoditas: ambil daftar komoditas yang tersedia
+          - get_varietas: ambil daftar varietas yang tersedia
+          - get_kelompok_tani: ambil daftar kelompok tani
+          
+          DATA TRANSACTION (simpan/update):
+          - simpan_lahan: simpan data lahan baru
+          - update_lahan: update data lahan existing
+          - simpan_tanam: simpan data tanam baru
+          - update_tanam: update data tanam existing
+          - simpan_panen: simpan data panen baru
+          - update_panen: update data panen existing
+          
+        10. MASTER DATA REFERENCE
+          - Untuk komoditas, varietas, dan kelompok tani, user bisa bertanya "apa saja komoditas yang tersedia?" untuk mendapatkan pilihan
+          - Jika user menyebut komoditas/varietas yang tidak standar, sarankan untuk mengecek daftar dengan bertanya
+          
+        11. PRINSIP UTAMA: lebih baik bertanya ulang daripada salah simpan data
+        '''),
+        ]),
+        Content('model', [
+          TextPart(
+            "Siap, Sahabat Agros. Saya mengerti. Saya akan mengumpulkan data user, lahan, tanam, dan panen, serta memberikan output JSON dan feedback verbal. Mari kita mulai.",
+          ),
+        ]),
+      ],
     );
   }
 
@@ -79,7 +107,6 @@ class AiService {
       final contentObject = Content('user', [TextPart(userMessage)]);
       final response = await _chatSession.sendMessage(contentObject);
       return response.text ?? "Maaf, saya tidak mengerti, bolehkah di ulang?.";
-
     } catch (e) {
       return "Terjadi kesalahan AI: $e";
     }

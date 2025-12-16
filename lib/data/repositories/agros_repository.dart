@@ -6,7 +6,6 @@ import 'tanam_repository.dart';
 
 class AgrosRepository {
   final AuthRepository auth = AuthRepository();
-  final LahanRepository lahanRepository = LahanRepository();
   final MasterRepository master = MasterRepository();
   final LahanRepository lahan = LahanRepository();
   final TanamRepository tanam = TanamRepository();
