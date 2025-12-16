@@ -7,6 +7,7 @@ import 'firebase_options.dart';
 
 import 'core/theme/app_theme.dart';
 import 'core/utils/logger_config.dart';
+import 'core/services/ai_service.dart';
 
 import 'presentation/viewmodels/stt_viewmodel.dart';
 import 'presentation/viewmodels/tts_viewmodel.dart';
@@ -35,9 +36,12 @@ class AgrosApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final agrosRepository = AgrosRepository();
+    final aiService = AiService();
+    
     return MultiProvider(
       providers: [
         Provider<AgrosRepository>.value(value: agrosRepository),
+        Provider<AiService>.value(value: aiService),
 
         ChangeNotifierProvider(
           create: (_) => SttViewmodel()..initSpeechState(),
@@ -59,6 +63,8 @@ class AgrosApp extends StatelessWidget {
             wakeWordVm: Provider.of<PorcupineViewModel>(context, listen: false),
             sttVm: Provider.of<SttViewmodel>(context, listen: false),
             ttsVm: Provider.of<TtsViewModel>(context, listen: false),
+            aiService: aiService,
+            repository: agrosRepository,
           ),
           update: (context, porcupine, stt, tts, previous) => previous!,
         ),

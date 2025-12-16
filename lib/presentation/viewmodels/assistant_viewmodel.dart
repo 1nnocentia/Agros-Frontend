@@ -17,9 +17,8 @@ class AssistantViewModel extends ChangeNotifier {
   final PorcupineViewModel wakeWordVm;
   final SttViewmodel sttVm;
   final TtsViewModel ttsVm;
-
-  final AiService _aiService = AiService();
-  final AgrosRepository _repo = AgrosRepository();
+  final AiService _aiService;
+  final AgrosRepository _repo;
 
   AgrosState _state = AgrosState.standby;
   AgrosState get state => _state;
@@ -34,7 +33,10 @@ class AssistantViewModel extends ChangeNotifier {
     required this.wakeWordVm,
     required this.sttVm,
     required this.ttsVm,
-  }) {
+    required AiService aiService,
+    required AgrosRepository repository,
+  })  : _aiService = aiService,
+        _repo = repository {
     _initFlow();
   }
 
