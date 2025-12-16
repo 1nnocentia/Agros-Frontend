@@ -2,6 +2,7 @@ import 'package:agros/presentation/views/basic_view.dart';
 import 'package:flutter/material.dart';
 import 'package:agros/data/repositories/agros_repository.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:logging/logging.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -11,6 +12,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  static final Logger _logger = Logger('LoginView');
   final TextEditingController _phoneController = TextEditingController();
   final AgrosRepository _repo = AgrosRepository();
   bool _isLoading = false;
@@ -20,92 +22,49 @@ class _LoginPageState extends State<LoginPage> {
 
     final phone = _phoneController.text.trim();
     if (phone.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Isi nomor HP dulu")));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Mohon isi nomor HP terlebih dahulu")),
+        );
+      }
       setState(() => _isLoading = false);
       return;
     }
 
-    bool isUserExists = await _repo.auth.checkUserExists(phone);
+    _logger.info('Starting login process for: $phone');
 
-    setState(() => _isLoading = false);
-
-    if (isUserExists) {
-      _performLogin(phone);
-    } else {
-      if (mounted) {
-        _showRegisterDialog(phone);
-      }
-    }
+    _performLogin(phone);
   }
 
   void _performLogin(String phone) async {
+    if (!mounted) return;
+
     setState(() => _isLoading = true);
-    
+
+    _logger.info('Attempting login...');
     bool success = await _repo.auth.login(phone);
 
+    if (!mounted) return;
     setState(() => _isLoading = false);
 
-    if (success && mounted) {
+    if (success) {
+      _logger.info('Login successful, navigating to BasicView');
       Navigator.pushReplacement(
-        context, 
+        context,
         MaterialPageRoute(builder: (context) => const BasicView()),
       );
     } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Login Gagal. Pastikan nomor terdaftar sebagai Petani.")),
-        );
-      }
+      _logger.warning('Login failed');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Login gagal. Periksa nomor HP atau koneksi internet Anda.",
+          ),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 3),
+        ),
+      );
     }
-  }
-
-  void _showRegisterDialog(String phone) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        title: Text(
-          "Pengguna Baru?",
-          style: textTheme.headlineSmall?.copyWith(
-            color: colorScheme.onSurface,
-          ),
-        ),
-        content: Text(
-          "Nomor $phone belum terdaftar. Apakah Anda ingin mendaftar sebagai Petani baru?",
-          style: textTheme.bodyMedium?.copyWith(
-            color: colorScheme.onSurfaceVariant,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            style: TextButton.styleFrom(
-              foregroundColor: colorScheme.onSurfaceVariant,
-            ),
-            child: const Text("Batal"),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _performLogin(phone);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: colorScheme.primary,
-              foregroundColor: colorScheme.onPrimary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: const Text("Ya, Daftar"),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
@@ -169,11 +128,15 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide(color: colorScheme.outline),
+                              borderSide: BorderSide(
+                                color: colorScheme.outline,
+                              ),
                             ),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide(color: colorScheme.outline),
+                              borderSide: BorderSide(
+                                color: colorScheme.outline,
+                              ),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
@@ -183,7 +146,8 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                             ),
                             filled: true,
-                            fillColor: colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                            fillColor: colorScheme.surfaceContainerHighest
+                                .withOpacity(0.3),
                           ),
                         ),
                         const SizedBox(height: 24),
@@ -199,7 +163,9 @@ class _LoginPageState extends State<LoginPage> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: colorScheme.primary,
                                   foregroundColor: colorScheme.onPrimary,
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(16),
                                   ),
