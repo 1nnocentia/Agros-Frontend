@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  final String baseUrl = 'http://127.0.0.1:8000/api/';
+  final String baseUrl = 'http://103.185.52.222:8000/api';
 
   Future<dynamic> post(String endpoint, Map<String, dynamic> data) async {
     final headers = await _getHeaders();
