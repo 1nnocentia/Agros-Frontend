@@ -1,10 +1,12 @@
 import 'package:agros/core/services/stt_service.dart';
 import 'package:agros/data/models/stt_config_model.dart';
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 
 class SttViewmodel extends ChangeNotifier {
+  static final Logger _logger = Logger('SttViewmodel');
   final SttService _service = SttService();
 
   VoidCallback? onStartListeningAnimation;
@@ -160,7 +162,7 @@ class SttViewmodel extends ChangeNotifier {
     void _statusListener(String status) {
       _logEvent('Status listener: $status');
       _lastStatus = status;
-      debugPrint("Status: $status");
+      _logger.fine('Status: $status');
 
       if (status == 'listening') {
         _isListening = true;
@@ -192,7 +194,7 @@ class SttViewmodel extends ChangeNotifier {
     void _logEvent(String eventDescription) {
       if (_currentConfig.logEvents) {
         var eventTime = DateTime.now().toIso8601String();
-        debugPrint("'$eventTime $eventDescription");
+        _logger.config('$eventTime $eventDescription');
       }
     }
 

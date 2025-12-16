@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'core/theme/app_theme.dart';
+import 'core/utils/logger_config.dart';
 
 import 'presentation/viewmodels/stt_viewmodel.dart';
 import 'presentation/viewmodels/tts_viewmodel.dart';
@@ -13,6 +15,9 @@ import 'package:agros/presentation/views/basic_view.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  LoggerConfig.initialize(level: Level.INFO);
+  
   await dotenv.load(fileName: ".env");
   
   runApp(const AgrosApp());

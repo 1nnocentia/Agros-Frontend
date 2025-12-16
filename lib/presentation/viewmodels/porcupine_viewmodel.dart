@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:logging/logging.dart';
 import '../../core/services/wake_word_service.dart';
 
 class PorcupineViewModel extends ChangeNotifier {
+  static final Logger _logger = Logger('PorcupineViewModel');
   String _status = "Inisialisasi...";
   bool _isListening = false;
   bool _isWakeWordDetected = false;
@@ -59,7 +61,7 @@ class PorcupineViewModel extends ChangeNotifier {
   }
 
   void _onDetected(int index) {
-    print("WAKE WORD TERDETEKSI DI VIEWMODEL!");
+    _logger.info('WAKE WORD TERDETEKSI DI VIEWMODEL!');
     
     _isWakeWordDetected = true;
     _status = "Hi Sahabat Agros!";

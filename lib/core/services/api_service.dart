@@ -2,12 +2,12 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  final String baseUrl = '';
+  final String baseUrl = 'http://127.0.0.1:8000/api/';
 
   Future<dynamic> post(String endpoint, Map<String, dynamic> data) async {
     final response = await http.post(
       Uri.parse('$baseUrl$endpoint'),
-      headers: {"Content-Type": "application/json"},
+      headers: {"Accept": "application/json"},
       body: jsonEncode(data),
     );
 
@@ -31,7 +31,7 @@ class ApiService {
   Future<dynamic> put(String endpoint, Map<String, dynamic> data) async {
     final response = await http.put(
       Uri.parse('$baseUrl$endpoint'),
-      headers: {"Content-Type": "application/json"},
+      headers: {"Accept": "application/json"},
       body: jsonEncode(data),
     );
 
@@ -41,7 +41,7 @@ class ApiService {
   Future<dynamic> patch(String endpoint, Map<String, dynamic> data) async {
     final response = await http.patch(
       Uri.parse('$baseUrl$endpoint'),
-      headers: {"Content-Type": "application/json"},
+      headers: {"Accept": "application/json"},
       body: jsonEncode(data),
     );
 
