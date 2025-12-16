@@ -41,7 +41,18 @@ class _LoginPageState extends State<LoginPage> {
 
     setState(() => _isLoading = true);
 
-    _logger.info('Attempting login...');
+    _logger.info('Checking if user exists...');
+    bool userExists = await _repo.auth.checkUserExists(phone);
+
+    if (!mounted) return;
+
+    if (!userExists) {
+      setState(() => _isLoading = false);
+      _showNewUserDialog(phone);
+      return;
+    }
+
+    _logger.info('User exists, attempting login...');
     bool success = await _repo.auth.login(phone);
 
     if (!mounted) return;
@@ -59,6 +70,66 @@ class _LoginPageState extends State<LoginPage> {
         const SnackBar(
           content: Text(
             "Login gagal. Periksa nomor HP atau koneksi internet Anda.",
+          ),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  void _showNewUserDialog(String phone) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Pengguna Baru'),
+          content: const Text(
+            'Nomor HP Anda belum terdaftar. Apakah Anda ingin membuat akun baru?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _logger.info('User cancelled registration');
+              },
+              child: const Text('Batal'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _proceedWithNewUser(phone);
+              },
+              child: const Text('Daftar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _proceedWithNewUser(String phone) async {
+    setState(() => _isLoading = true);
+    _logger.info('Creating new user account...');
+
+    bool success = await _repo.auth.login(phone);
+
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+
+    if (success) {
+      _logger.info('Registration successful, navigating to BasicView');
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const BasicView()),
+      );
+    } else {
+      _logger.warning('Registration failed');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Pendaftaran gagal. Silakan coba lagi.",
           ),
           backgroundColor: Colors.red,
           duration: Duration(seconds: 3),

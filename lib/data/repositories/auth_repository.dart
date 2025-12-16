@@ -25,9 +25,7 @@ class AuthRepository {
       return false;
     } catch (e) {
       _logger.severe('Check Phone Error: $e');
-      // Jika endpoint tidak tersedia, return true untuk langsung coba login
-      _logger.info('Endpoint might not exist, will attempt login directly');
-      return true;
+      return false;
     }
   }
 
