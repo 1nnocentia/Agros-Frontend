@@ -117,9 +117,21 @@ class AssistantViewModel extends ChangeNotifier {
       _updateDisplay(responseToSpeak);
       await _speakResponse(responseToSpeak);
     } catch (e) {
-      _logger.severe(e);
-      _updateDisplay("Terjadi kesalahan sistem.");
-      await _speakResponse("Maaf, ada gangguan sistem.");
+      _logger.severe("Error Processing: $e");
+
+      String errorMessage = "Maaf, ada gangguan sistem.";
+
+      if (e.toString().contains("Quota exceeded") ||
+          e.toString().contains("429")) {
+        errorMessage =
+            "Maaf, server AI sedang sibuk (Limit Habis). Mohon tunggu 1 menit lagi.";
+      } else if (e.toString().contains("SocketException") ||
+          e.toString().contains("Connection refused")) {
+        errorMessage = "Gagal terhubung ke internet/server.";
+      }
+
+      _updateDisplay(errorMessage);
+      await _speakResponse(errorMessage);
     }
   }
 
@@ -205,32 +217,79 @@ class AssistantViewModel extends ChangeNotifier {
     String action,
     Map<String, dynamic> data,
   ) async {
-    String? getId() {
-      if (data['id'] != null) return data['id'].toString();
-      for (var k in data.keys)
-        if (k.endsWith('_id') && k != 'role_id') return data[k].toString();
-      return null;
-    }
+    try {
+      String? getId() {
+        if (data['id'] != null) return data['id'].toString();
+        for (var k in data.keys) {
+          if (k.endsWith('_id') && k != 'role_id') return data[k].toString();
+        }
+        return null;
+      }
 
-    switch (action) {
-      case 'simpan_lahan':
-        return await _repo.lahan.createLahan(data);
-      case 'simpan_tanam':
-        return await _repo.tanam.createTanam(data);
-      case 'simpan_panen':
-        return await _repo.panen.createPanen(data);
+      _logger.info('Executing transaction: $action with data: $data');
 
-      case 'update_lahan':
-        String? id = getId();
-        if (id == null) return false;
-        data.remove('id');
-        data.remove('lahan_id');
-        return await _repo.lahan.updateLahan(id, data);
+      switch (action) {
+        case 'simpan_lahan':
+          _logger.info('Creating lahan...');
+          return await _repo.lahan.createLahan(data);
 
-      // ... case update lainnya
+        case 'simpan_tanam':
+          _logger.info('Creating tanam...');
+          return await _repo.tanam.createTanam(data);
 
-      default:
-        return true;
+        case 'simpan_panen':
+          _logger.info('Creating panen...');
+          return await _repo.panen.createPanen(data);
+
+        case 'update_lahan':
+          String? id = getId();
+          if (id == null) {
+            _logger.warning('Update lahan: ID not found in data');
+            return false;
+          }
+          _logger.info('Updating lahan with id: $id');
+          data.remove('id');
+          data.remove('lahan_id');
+          return await _repo.lahan.updateLahan(id, data);
+
+        case 'update_tanam':
+          String? id = getId();
+          if (id == null) {
+            _logger.warning('Update tanam: ID not found in data');
+            return false;
+          }
+          _logger.info('Updating tanam with id: $id');
+          data.remove('id');
+          data.remove('tanam_id');
+          return await _repo.tanam.updateTanam(id, data);
+
+        case 'update_panen':
+          String? id = getId();
+          if (id == null) {
+            _logger.warning('Update panen: ID not found in data');
+            return false;
+          }
+          _logger.info('Updating panen with id: $id');
+          data.remove('id');
+          data.remove('panen_id');
+          return await _repo.panen.updatePanen(id, data);
+
+        case 'verify_panen':
+          String? id = getId();
+          if (id == null) {
+            _logger.warning('Verify panen: ID not found in data');
+            return false;
+          }
+          _logger.info('Verifying panen with id: $id');
+          return await _repo.panen.verifyPanen(id);
+
+        default:
+          _logger.warning('Unknown action: $action');
+          return true;
+      }
+    } catch (e) {
+      _logger.severe('Error in _executeTransaction: $e');
+      return false;
     }
   }
 
