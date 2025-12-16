@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:agros/core/services/ai_service.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +23,8 @@ class AssistantViewModel extends ChangeNotifier {
 
   AgrosState _state = AgrosState.standby;
   AgrosState get state => _state;
+  
+  Timer? _listenTimeoutTimer;
 
   String _displayText = "Hai Sahabat Agros!";
   String get displayText => _displayText;
@@ -48,10 +51,23 @@ class AssistantViewModel extends ChangeNotifier {
     });
 
     sttVm.addListener(() {
+      _logger.fine('STT state changed - isListening: ${sttVm.isListening}, lastWords: ${sttVm.lastWords}');
+      
       if (!sttVm.isListening &&
           sttVm.lastWords.isNotEmpty &&
           _state == AgrosState.listeningCommand) {
+        _listenTimeoutTimer?.cancel();
         _processToAI(sttVm.lastWords);
+      } else if (!sttVm.isListening && 
+                 sttVm.lastWords.isEmpty &&
+                 _state == AgrosState.listeningCommand) {
+        _logger.info('STT stopped with no words, returning to standby');
+        _listenTimeoutTimer?.cancel();
+        Future.delayed(const Duration(seconds: 1), () {
+          if (_state == AgrosState.listeningCommand) {
+            startStandbyMode();
+          }
+        });
       }
     });
 
@@ -80,12 +96,24 @@ class AssistantViewModel extends ChangeNotifier {
 
   Future<void> _startListeningUser() async {
     _setState(AgrosState.listeningCommand);
-    _updateDisplay("Katakan 'Halo Agros'...");
+    _updateDisplay("Mendengarkan...");
     await wakeWordVm.stopListening();
 
     _logger.info('AGROS: Mendengarkan perintah user...');
 
     sttVm.startListening();
+    
+    _listenTimeoutTimer?.cancel();
+    _listenTimeoutTimer = Timer(const Duration(seconds: 35), () {
+      _logger.warning('Assistant level timeout - forcing return to standby');
+      if (_state == AgrosState.listeningCommand) {
+        sttVm.stopListening();
+        _updateDisplay("Waktu habis, kembali ke mode standby");
+        Future.delayed(const Duration(seconds: 2), () {
+          startStandbyMode();
+        });
+      }
+    });
   }
 
   Future<void> _processToAI(String text) async {
@@ -330,10 +358,19 @@ class AssistantViewModel extends ChangeNotifier {
   }
 
   void manualStartListening() {
+    _logger.info('Manual start listening triggered');
     _startListeningUser();
   }
 
   void manualStopListening() {
+    _logger.info('Manual stop listening triggered');
+    _listenTimeoutTimer?.cancel();
     sttVm.stopListening();
+  }
+  
+  @override
+  void dispose() {
+    _listenTimeoutTimer?.cancel();
+    super.dispose();
   }
 }

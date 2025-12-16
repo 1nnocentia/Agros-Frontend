@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:agros/core/services/stt_service.dart';
 import 'package:agros/data/models/stt_config_model.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +17,8 @@ class SttViewmodel extends ChangeNotifier {
   bool _isListening = false;
   bool _isProcessing = false;
   String _displayText = 'Tekan mikrofon untuk berbicara';
+  
+  Timer? _safetyTimer;
 
   final ValueNotifier<double> soundLevelNotifier = ValueNotifier(0.0);
   String _recognizedText = "";
@@ -75,19 +78,41 @@ class SttViewmodel extends ChangeNotifier {
       _isListening = true;
       _displayText = '';
 
+      _safetyTimer?.cancel();
+      _safetyTimer = Timer(const Duration(seconds: 30), () {
+        _logger.warning('Safety timer triggered - forcing stop');
+        if (_isListening) {
+          _forceStop('Waktu mendengarkan habis');
+        }
+      });
+
       onStartListeningAnimation?.call();
       notifyListeners();
 
-      _service.listen(
-        config: _currentConfig,
-        onResult: _resultListener,
-        onSoundLevel: _soundLevelListener,
-      );
+      try {
+        _service.listen(
+          config: _currentConfig,
+          onResult: _resultListener,
+          onSoundLevel: _soundLevelListener,
+        );
+        _logger.info('STT listen started successfully');
+      } catch (e) {
+        _logger.severe('Failed to start listening: $e');
+        _forceStop('Gagal memulai rekaman');
+      }
     }
 
     void stopListening() {
       _logEvent('Stop Listening');
-      _service.stop();
+      _safetyTimer?.cancel();
+      _safetyTimer = null;
+      
+      try {
+        _service.stop();
+      } catch (e) {
+        _logger.warning('Error stopping service: $e');
+      }
+      
       _isListening = false;
 
       onStopListeningAnimation?.call();
@@ -103,9 +128,36 @@ class SttViewmodel extends ChangeNotifier {
 
     void cancelListening() {
       _logEvent('Cancel Listening');
+      _safetyTimer?.cancel();
+      _safetyTimer = null;
       _isListening = false;
-      _service.cancel();
+      
+      try {
+        _service.cancel();
+      } catch (e) {
+        _logger.warning('Error cancelling service: $e');
+      }
+      
       _resetState();
+      notifyListeners();
+    }
+    
+    void _forceStop(String reason) {
+      _logger.warning('Force stopping STT: $reason');
+      _safetyTimer?.cancel();
+      _safetyTimer = null;
+      _isListening = false;
+      _isProcessing = false;
+      
+      try {
+        _service.stop();
+      } catch (e) {
+        _logger.warning('Error in force stop: $e');
+      }
+      
+      onStopListeningAnimation?.call();
+      _displayText = reason;
+      _lastError = reason;
       notifyListeners();
     }
 
@@ -177,17 +229,24 @@ class SttViewmodel extends ChangeNotifier {
     void _errorListener(SpeechRecognitionError error) {
       _logEvent('Received Error Status: $error');
       _lastError = '${error.errorMsg}';
+      _logger.warning('STT Error: ${error.errorMsg}');
+      
+      _safetyTimer?.cancel();
+      _safetyTimer = null;
       
       if (error.errorMsg == 'error_no_match') {
         _recognizedText = "Maaf, saya tidak mendengar apapun.";
         _displayText = "Tidak ada suara terdeteksi";
       } else if (error.errorMsg == 'error_network') {
         _displayText = "Koneksi bermasalah";
+      } else if (error.errorMsg == 'error_speech_timeout') {
+        _displayText = "Waktu mendengarkan habis";
       } else {
         _displayText = "Error: ${error.errorMsg}";
       }
       
       _isListening = false;
+      onStopListeningAnimation?.call();
       notifyListeners();
     }
 
@@ -204,6 +263,8 @@ class SttViewmodel extends ChangeNotifier {
 
     @override
     void dispose() {
+      _safetyTimer?.cancel();
+      _safetyTimer = null;
       soundLevelNotifier.dispose();
       super.dispose();
     }

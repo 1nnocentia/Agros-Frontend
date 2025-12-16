@@ -23,7 +23,7 @@ class SttConfigModel {
       SpeechListenOptions(
         listenMode: ListenMode.dictation,
         onDevice: false,
-        cancelOnError: false,
+        cancelOnError: true,
         partialResults: true,
         autoPunctuation: true,
         enableHapticFeedback: true,
@@ -32,7 +32,7 @@ class SttConfigModel {
       5,
       false,
       false,
-      120,
+      30,
     );
   }
 
