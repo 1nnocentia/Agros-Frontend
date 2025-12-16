@@ -11,7 +11,9 @@ import 'presentation/viewmodels/tts_viewmodel.dart';
 import 'package:agros/presentation/viewmodels/porcupine_viewmodel.dart';
 import 'package:agros/presentation/viewmodels/assistant_viewmodel.dart';
 
-import 'package:agros/presentation/views/basic_view.dart';
+import 'package:agros/presentation/widgets/auth_guard.dart';
+
+import 'package:agros/data/repositories/agros_repository.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,8 +30,12 @@ class AgrosApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final agrosRepository = AgrosRepository();
     return MultiProvider(
       providers: [
+
+        Provider<AgrosRepository>.value(value: agrosRepository),
+
         ChangeNotifierProvider(
           create: (_) => SttViewmodel()..initSpeechState(),
         ),
@@ -57,7 +63,7 @@ class AgrosApp extends StatelessWidget {
         title: 'Agros',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme, 
-        home: const BasicView(),
+        home: const AuthGuard(),
       ),
     );
   }
