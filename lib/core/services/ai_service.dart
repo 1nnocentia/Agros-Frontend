@@ -4,35 +4,7 @@ class AiService {
   late final GenerativeModel _model;
   late ChatSession _chatSession;
 
-  AiService() {
-    final safetySettings = [
-      SafetySetting(HarmCategory.harassment, HarmBlockThreshold.medium, null),
-      SafetySetting(HarmCategory.hateSpeech, HarmBlockThreshold.medium, null),
-      SafetySetting(
-        HarmCategory.sexuallyExplicit,
-        HarmBlockThreshold.medium,
-        null,
-      ),
-      SafetySetting(
-        HarmCategory.dangerousContent,
-        HarmBlockThreshold.medium,
-        null,
-      ),
-    ];
-
-    _model = FirebaseAI.googleAI().generativeModel(
-      model: 'gemini-2.0-flash',
-      safetySettings: safetySettings,
-    );
-
-    _startNewChat();
-  }
-
-  void _startNewChat() {
-    _chatSession = _model.startChat(
-      history: [
-        Content('user', [
-          TextPart('''
+  static const String _systemPrompt = '''
         Role: Agros (Asisten Petani). Tone: Santai, netral, panggil "Sahabat Agros".
         Fokus: Kumpulkan data pertanian (User, Lahan, Tanam, Panen). Jangan edukasi panjang.
 
@@ -56,14 +28,28 @@ class AiService {
         CONTOH RESPON JSON:
         {"action": "simpan_lahan", "data": {"lahan_name": "Sawah A", "land_area": 2000}}
         Feedback: "Oke Sahabat Agros, lahan Sawah A seluas 2000 meter sudah saya catat.
-        '''),
-        ]),
-        Content('model', [
-          TextPart(
-            "Siap Sahabat Agros.",
-          ),
-        ]),
-      ],
+        ''';
+
+  AiService() {
+    final safetySettings = [
+      SafetySetting(HarmCategory.harassment, HarmBlockThreshold.medium, null),
+      SafetySetting(HarmCategory.hateSpeech, HarmBlockThreshold.medium, null),
+      SafetySetting(HarmCategory.sexuallyExplicit, HarmBlockThreshold.medium, null,),
+      SafetySetting(HarmCategory.dangerousContent, HarmBlockThreshold.medium,null,),
+    ];
+
+    _model = FirebaseAI.googleAI().generativeModel(
+      model: 'gemini-2.0-flash',
+      safetySettings: safetySettings,
+      systemInstruction: Content.system(_systemPrompt),
+    );
+
+    _startNewChat();
+  }
+
+  void _startNewChat() {
+    _chatSession = _model.startChat(
+      history: [],
     );
   }
 
@@ -73,6 +59,9 @@ class AiService {
       final response = await _chatSession.sendMessage(contentObject);
       return response.text ?? "Maaf, saya tidak mengerti, bolehkah di ulang?.";
     } catch (e) {
+      if (e.toString().contains("Quota exceeded")) {
+         return "Maaf Sahabat Agros, sistem sedang sibuk. Mohon tunggu 1 menit.";
+      }
       return "Terjadi kesalahan AI: $e";
     }
   }
