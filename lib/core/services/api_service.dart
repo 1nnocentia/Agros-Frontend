@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   final String baseUrl = 'http://127.0.0.1:8000/api/';
@@ -46,6 +47,21 @@ class ApiService {
     );
 
     return _handleResponse(response);
+  }
+
+  Future<Map<String, String>> _getHeaders() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? token = prefs.getString('auth_token'); 
+
+    var headers = {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+    };
+
+    if (token != null) {
+      headers["Authorization"] = "Bearer $token";
+    }
+    return headers;
   }
 
   dynamic _handleResponse(http.Response response) {
