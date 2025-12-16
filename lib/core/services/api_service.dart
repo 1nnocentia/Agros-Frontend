@@ -6,9 +6,10 @@ class ApiService {
   final String baseUrl = 'http://127.0.0.1:8000/api/';
 
   Future<dynamic> post(String endpoint, Map<String, dynamic> data) async {
+    final headers = await _getHeaders();
     final response = await http.post(
       Uri.parse('$baseUrl$endpoint'),
-      headers: {"Accept": "application/json"},
+      headers: headers,
       body: jsonEncode(data),
     );
 
@@ -20,7 +21,8 @@ class ApiService {
   }
 
   Future<dynamic> get(String endpoint) async {
-    final response = await http.get(Uri.parse('$baseUrl$endpoint'));
+    final headers = await _getHeaders();
+    final response = await http.get(Uri.parse('$baseUrl$endpoint'), headers: headers);
     
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
@@ -30,9 +32,10 @@ class ApiService {
   }
 
   Future<dynamic> put(String endpoint, Map<String, dynamic> data) async {
+    final headers = await _getHeaders();
     final response = await http.put(
       Uri.parse('$baseUrl$endpoint'),
-      headers: {"Accept": "application/json"},
+      headers: headers,
       body: jsonEncode(data),
     );
 
@@ -40,9 +43,10 @@ class ApiService {
   }
 
   Future<dynamic> patch(String endpoint, Map<String, dynamic> data) async {
+    final headers = await _getHeaders();
     final response = await http.patch(
       Uri.parse('$baseUrl$endpoint'),
-      headers: {"Accept": "application/json"},
+      headers: headers,
       body: jsonEncode(data),
     );
 
