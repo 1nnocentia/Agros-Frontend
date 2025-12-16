@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:agros/presentation/widgets/toggle_switch.dart';
 import 'package:agros/presentation/widgets/microphone_icon.dart';
 
+import 'package:agros/presentation/views/advance_view.dart';
+
 
 class BasicView extends StatefulWidget {
   const BasicView({super.key});
@@ -46,7 +48,16 @@ class _BasicViewState extends State<BasicView> {
                     value: isBasicMode,
                     onChanged: (val) {
                       setState(() => isBasicMode = val);
-                      // TODO: Implementasi logika pindah mode di masa depan
+                      if (val == false) {
+                        Navigator.pushReplacement(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder: (context, anim1, anim2) => const AdvanceView(),
+                            transitionDuration: Duration.zero,
+                            reverseTransitionDuration: Duration.zero,
+                          ),
+                        );
+                      }
                     },
                   ),
                 ],
