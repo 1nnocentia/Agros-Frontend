@@ -30,6 +30,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  
+  # Storage
+  shared_preferences: ^2.5.4
 
   # API
   http: ^1.6.0

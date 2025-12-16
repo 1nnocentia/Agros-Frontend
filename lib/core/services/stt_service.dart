@@ -58,7 +58,7 @@ class SttService {
   }
 
   Future<LocaleName?> getSystemLocale() async {
-    _log('🌍 [STT_SERVICE] Fetching system locale...');
+    _log('[STT_SERVICE] Fetching system locale...');
     try {
       final locale = await _speechToText.systemLocale();
       _log('[STT_SERVICE] System locale: ${locale?.localeId} (${locale?.name})');
