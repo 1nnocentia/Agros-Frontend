@@ -24,6 +24,22 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
+    bool isUserExists = await _repo.auth.checkUserExists(phone);
+
+    setState(() => _isLoading = false);
+
+    if (isUserExists) {
+      _performLogin(phone);
+    } else {
+      if (mounted) {
+        _showRegisterDialog(phone);
+      }
+    }
+  }
+
+  void _performLogin(String phone) async {
+    setState(() => _isLoading = true);
+    
     bool success = await _repo.auth.login(phone);
 
     setState(() => _isLoading = false);
@@ -40,6 +56,29 @@ class _LoginPageState extends State<LoginPage> {
         );
       }
     }
+  }
+
+  void _showRegisterDialog(String phone) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Pengguna Baru?"),
+        content: Text("Nomor $phone belum terdaftar. Apakah Anda ingin mendaftar sebagai Petani baru?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Batal", style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _performLogin(phone);
+            },
+            child: const Text("Ya, Daftar"),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -64,7 +103,7 @@ class _LoginPageState extends State<LoginPage> {
             _isLoading 
               ? const CircularProgressIndicator()
               : ElevatedButton(
-                  onPressed: _handleLogin,
+                  onPressed: _isLoading ? null : _handleLogin,
                   child: const Text("MASUK"),
                 ),
           ],

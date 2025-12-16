@@ -4,6 +4,22 @@ import 'package:agros/core/services/api_service.dart';
 class AuthRepository {
   final ApiService _api = ApiService();
 
+  Future<bool> checkUserExists(String phoneNumber) async {
+    try {
+      final response = await _api.post('/check-phone', {
+        'phone_number': phoneNumber,
+      });
+
+      if (response != null && response['exists'] != null) {
+        return response['exists'] as bool;
+      }
+      return false;
+    } catch (e) {
+      print("Check Phone Error: $e");
+      return false;
+    }
+  }
+
   Future<bool> login(String phoneNumber) async {
     try {
       final response = await _api.post('/login', {
@@ -31,7 +47,7 @@ class AuthRepository {
     }
   }
 
-  
+
 
   Future<bool> logout() async {
     try {
